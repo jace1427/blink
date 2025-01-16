@@ -12,8 +12,11 @@ Below I walk through each, trying to find out what they do.
 ## pico_led_init
 
 `PICO_DEFAULT_LED_PIN = 25`: only on the pico2_w
+
 `GPIO_IN = 0`: TODO try to find in datasheet why this is
+
 `GPIO_OUT = 1`: TODO try to find in datasheet why this is
+
 `GPIO_FUNC_SIO = 5`: "The SIO GPIO registers control GPIOs which have the SIO function selected (5)"
 
 - `gpio_init(PICO_DEFAULT_LED_PIN)`
@@ -43,8 +46,15 @@ Below I walk through each, trying to find out what they do.
 
 ## MCRR
 
-- `p0`: coprocessor 0
-- `#4`: ? opcode - is a 4-bit coprocessor-specific opcode
-- `PICO_DEFAULT_LED_PIN`
-- `GPIO_IN`
-- `c4`: coprocessor register
+`MCRR{cond} coproc, #opcode, Rt, Rt2, CRm`
+
+- coproc: `p0`
+  coprocessor 0
+- opcode: `#4`
+  is a 4-bit coprocessor-specific opcode
+- Rt: `PICO_DEFAULT_LED_PIN`
+  ARM source registers
+- Rt2: `GPIO_IN`
+  ARM source registers
+- CRm: `c4`
+  coprocessor register
