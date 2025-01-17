@@ -11,6 +11,15 @@ Below I walk through each, trying to find out what they do.
 
 ## pico_led_init
 
+### High Level
+
+pico_led_init sends a bit to the pico 5 times.
+First, It sets pin 25 output enable to 1.
+It then writes a 1 to the pin (turning it on?).
+Finally it sets pin 25 output enable to 0.
+
+### Vars and Args
+
 `PICO_DEFAULT_LED_PIN = 25`: only on the pico2_w
 
 `GPIO_IN = 0`: TODO try to find in datasheet why this is
@@ -18,6 +27,18 @@ Below I walk through each, trying to find out what they do.
 `GPIO_OUT = 1`: TODO try to find in datasheet why this is
 
 `GPIO_FUNC_SIO = 5`: "The SIO GPIO registers control GPIOs which have the SIO function selected (5)"
+
+`&pads_bank0_hw0->io[gpio]`: the pads_bank0_hw_t is a struct that maps to a location in memory
+
+`PADS_BANK0_GPIO0_IE_BITS`: 0x00000040u
+
+`PADS_BANK0_GPIO0_OD_BITS`: 0x00000080u
+
+`REG_ALIAS_XOR_BITS`: 0x2u << 12u
+
+`hw_alias_check_addr()`:
+
+### Stack Trace
 
 - `gpio_init(PICO_DEFAULT_LED_PIN)`
   - `gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_IN)`
@@ -30,7 +51,8 @@ Below I walk through each, trying to find out what they do.
     - `check_gpio_param(PICO_DEFAULT_LED_PIN)`
       - `invalid_params_if(HARDWARE_GPIO, gpio >= NUM_BANK0_GPIOS)` - skipping for now
       - `invalid_params_if(HARDWARE_GPIO, ((uint32_t)fn << IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB) & ~IO_BANK0_GPIO0_CTRL_FUNCSEL_BITS)` - skipping for now
-      - `hw_write_masked(&pads_bank0_hw->io[gpio], PADS_BANK0_GPIO0_IE_BITS, PADS_BANK0_GPIO0_IE_BITS | PADS_BANK0_GPIO0_OD_BITS)` - sets input enable on, output disable off
+      - `hw_write_masked(&pads_bank0_hw->io[gpio], PADS_BANK0_GPIO0_IE_BITS, PADS_BANK0_GPIO0_IE_BITS | PADS_BANK0_GPIO0_OD_BITS)`
+        - sets input enable on, output disable off
         - `hw_xor_bits(addr, (*addr ^ values) & write_mask)`
           - `*(io_rw_32 *) hw_xor_alias_untyped((volatile void *) addr) = mask;`
             - `#define hw_xor_alias_untyped(addr) ((void *)(REG_ALIAS_XOR_BITS + hw_alias_check_addr(addr)))`
@@ -44,7 +66,22 @@ Below I walk through each, trying to find out what they do.
   - `gpioc_bit_oe_put(PICO_DEFAULT_LED_PIN, GPIO_OUT)`
     - `pico_default_asm_volatile("mcrr p0, #4, %0, %1, c4" : : "r" (PICO_DEFAULT_LED_PIN), "r" (GPIO_OUT);`
 
+## pico_set_led
+
+### Vars and Args
+
+`led_on`: argument, bool
+
+### Stack Trace
+
+- `gpio_put(PICO_DEFAULT_LED_PIN, led_on)`
+  - `gpio_put(PICO_DEFAULT_LED_PIN, led_on)`
+    - `gpioc_bit_out_put(PICO_DEFAULT_LED_PIN, led_on)`
+      - `pico_default_asm_volatile ("mcrr p0, #4, %0, %1, c0" : : "r" (PICO_DEFAULT_LED_PIN), "r" (led_on))`
+
 ## MCRR
+
+mcrr is the command used by the pico-sdk to move a bit from a register to the coprocessor
 
 `MCRR{cond} coproc, #opcode, Rt, Rt2, CRm`
 
