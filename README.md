@@ -13,9 +13,12 @@ Below I walk through each, trying to find out what they do.
 
 ### High Level
 
-pico_led_init sends a bit to the pico 5 times.
+pico_led_init sends a bit to the pico 6 times.
 First, It sets pin 25 output enable to 1.
 It then writes a 1 to the pin (turning it on?).
+Then it uses a xor to set input enable on, and output disable off
+Then it sets all bits to zero exception fsel, which it sets to 5
+Then it clears all iso bits
 Finally it sets pin 25 output enable to 0.
 
 ### Vars and Args
@@ -36,7 +39,13 @@ Finally it sets pin 25 output enable to 0.
 
 `REG_ALIAS_XOR_BITS`: 0x2u << 12u
 
-`hw_alias_check_addr()`:
+`hw_alias_check_addr()`: `((uintptr_t)(addr))` - simply checks that addr is a uintptr_t
+
+`IO_BANK0_GPIO0_CTRL_FUNCSEL_LSB`: ?
+
+`PADS_BANK0_GPIO0_ISO_BITS`: 0x00000100u
+
+`REG_ALIAS_CLR_BITS`: 0x3u << 12u
 
 ### Stack Trace
 
@@ -67,6 +76,10 @@ Finally it sets pin 25 output enable to 0.
     - `pico_default_asm_volatile("mcrr p0, #4, %0, %1, c4" : : "r" (PICO_DEFAULT_LED_PIN), "r" (GPIO_OUT);`
 
 ## pico_set_led
+
+### High Level
+
+pico_set_led simply writes a 1 or a 0 (given by `led_on`) to GPIO pin 25.
 
 ### Vars and Args
 
