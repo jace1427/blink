@@ -1,9 +1,16 @@
+# Post-Mortem
+
+Well, I gave it a great try. Unfortunately after following the stack, trying to learn and understand what each asm command did, etc, etc, I realized that I have the Pico 2W! And the onboard LED is not connected to the rp2350 gpio pins on the Pico2W, it's connected to the wifi chip! WL_GPIO0, to be exact. Many lessons learned, but for now my bare metal blinking days are over. I _might_ come back to this to figure out how to interface with the CYW43439, but no promises.
+
+I am glad I did this, it gave me lots of insight into how the pico-sdk actually works, how it relates to the rp2350's specs, how CMAKE works, and how to setup a pico project with nvim.
+
 # Reverse Engineering pico-sdk
 
 The example given in pico-examples blink.c has 2 functions: pico_led_init, pico_set_led.
 Below I walk through each, trying to find out what they do.
 
 - [Getting Started](https://datasheets.raspberrypi.com/pico/getting-started-with-pico.pdf)
+- [Pico2W Datasheet](https://datasheets.raspberrypi.com/picow/pico-2-w-datasheet.pdf)
 - [RP2350 Datasheet](https://datasheets.raspberrypi.com/rp2350/rp2350-datasheet.pdf)
 - [ARM Docs](https://developer.arm.com/documentation/ddi0553/latest/)
 - [pico-examples](https://github.com/raspberrypi/pico-examples)
